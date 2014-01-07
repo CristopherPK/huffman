@@ -1,7 +1,19 @@
 #include <QCoreApplication>
+#include <QDataStream>
+
+#include "encoding.h"
+
+void showHelpMe(){
+
+}
 
 int main(int argc, char *argv[])
-{
+{         
+    Encoding * compress = new Encoding;
+    compress->calcFreqChar("in.txt");
+    compress->buildNodeList();
+    compress->sortNodeList();
+
     QString a;
     a = argv[1];
     QString b;
@@ -15,22 +27,15 @@ int main(int argc, char *argv[])
 
         //Compression Standart.
         if(a == "-c"){
+            //Compression with different path of output file.
+            if(c == "-o"){
 
+            }
         }
-        //Compression with different path of output file.
-        else if(c == "-o"){
-
-        }
-
         //Descompression with different path of output file.
-        else if(b == "-d"){
-
-        }
         else {
-            qDebug() << "Invalid command.";
-            showHelpMe();
-        }
 
+        }
     }    else {
         qDebug() << "Invalid command. There are excess of parameters.";
         showHelpMe();
