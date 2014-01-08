@@ -10,13 +10,17 @@ class Encoding
 {
 public:    
     char ch;
-    int freqList[256];
+    int freqList[255];
     int fileSize;
-    HuffNode * curr;
-    void calcFreqChar(QString entry);
+    int sizeList;
+    HuffNode * NodeList[255];
+    HuffNode *head;
+
+    void calcFreqChar(QFile * src);
     void buildNodeList();
     void sortNodeList();
-
+    void buildHuffTree();
+    void writeHuffTree();
 };
 
 #endif // ENCODING_H
