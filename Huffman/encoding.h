@@ -14,8 +14,6 @@ public:
     int fileSize;
     int sizeList;
     HuffNode * NodeList[255];
-    HuffNode *head;
-
     void calcFreqChar(QFile * src);
     void buildNodeList();
     void sortNodeList();

@@ -55,52 +55,44 @@ void Encoding::sortNodeList(){
     HuffNode * aux = new HuffNode;
     for(int i=0; i < sizeList-1 ; i++ ){
         for(int j=0; j < sizeList-1; j++){
-            if(NodeList[j]->freq >= NodeList[j+1]->freq){
+            if(NodeList[j]->freq >= NodeList[j+1]->freq && NodeList[j]->freq != 0){
                 aux = NodeList[j+1];
                 NodeList[j+1] = NodeList[j];
                 NodeList[j] = aux;
                 aux = NULL;
             }
         }
-    }
+    }/*
     for(int i=0; i<sizeList; i++){
         qDebug() << (int) NodeList[i]->contain << NodeList[i]->freq << i;
-    }
+    }*/
 }
 
 void Encoding::buildHuffTree(){
 
-    head = new HuffNode;
-
-    head->contain = 0;
-    head->freq = 0;
-    head->isLeaf = 0;
-
     for(int i=0; i<sizeList-1; i++){
 
-        if(head->freq == 0){
-            head->freq = NodeList[i]->freq + NodeList[i+1]->freq;
-            head->lc = NodeList[i];
-            head->rc = NodeList[i+1];
+        qDebug() << "Iteragindo.";
 
-        } else {
+        HuffNode * head = new HuffNode;
+        HuffNode * aux = new HuffNode;
 
-            if(NodeList[i+1]->freq < NodeList[i+1]->freq + head->freq){
-                head->rc = head;
-                head->freq = NodeList[i+1]->freq + head->freq;
-                head->lc = NodeList[i+1];
-            }
+        head->freq = NodeList[i]->freq + NodeList[i+1]->freq;
+        head->isLeaf = 0;
+        head->lc = aux->lc = NodeList[i];
+        head->rc = aux->rc = NodeList[i+1];
 
-            if(NodeList[i+1]->freq >= NodeList[i+1]->freq + head->freq) {
-                head->lc = head;
-                head->freq = NodeList[i+1]->freq + head->freq;
-                head->rc = NodeList[i+1];
+        NodeList[i+1] = head;
+        NodeList[i]->freq = 0;
 
-            }
-        }
+        sortNodeList();
+
+//        for(int j=0; j<sizeList; j++){
+//            qDebug() << "List" << (int)NodeList[j]->contain << NodeList[j]->freq;
+//        }
+
     }
 }
-
 void Encoding::writeHuffTree(){
 
 }
