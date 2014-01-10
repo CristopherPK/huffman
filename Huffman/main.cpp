@@ -9,13 +9,9 @@ void showHelpMe(){
 
 int main(int argc, char *argv[])
 {         
-    QFile file("in.txt");
-    Encoding * compress = new Encoding;
-    compress->calcFreqChar(&file);
-    compress->buildNodeList();
-    compress->sortNodeList();
-    compress->buildHuffTree();
-    compress->writeHuffTree();
+    Encoding * Encode = new Encoding;
+
+    Encode->encodeFile("in.jpg","out.huff");
 
     QString a;
     a = argv[1];

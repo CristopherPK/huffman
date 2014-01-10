@@ -1,24 +1,22 @@
 #ifndef ENCODING_H
 #define ENCODING_H
 
-#include <QCoreApplication>
-#include <QDebug>
-#include <QFile>
+
 #include "hufftree.h"
 
 class Encoding
 {
 public:    
-    char ch;
-    int freqList[255];
-    int fileSize;
     int sizeList;
-    HuffNode * NodeList[255];
-    void calcFreqChar(QFile * src);
-    void buildNodeList();
-    void sortNodeList();
-    void buildHuffTree();
-    void writeHuffTree();
+    QString HuffCode;
+    void calcFreqChar(QFile * src, int freqList[], char ch);
+    void buildNodeList(HuffNode *NodeList[], int freqList[]);
+    void sortNodeList(HuffNode *NodeList[]);
+    void buildHuffTree(HuffNode *NodeList[]);
+    void buildCopyList(HuffNode *NodeList[], HuffNode *ListCopy[]);
+    void writeHuffTree(QFile * out, HuffNode *TreeRoot, HuffNode * CodeList[]);
+    void writeHuffCode(QFile * src, QFile *out, HuffNode * CodeList[]);
+    void encodeFile(QString inFileName, QString outFileName);
 };
 
 #endif // ENCODING_H
