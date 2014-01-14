@@ -1,7 +1,8 @@
 #include "encoding.h"
-#include <math.h>
 
-void Encoding::calcFreqChar(QFile * src, int freqList[255], char ch){
+void Encoding::calcFreqChar(QFile * src, int freqList[256]){
+
+    char ch;
 
     //Inicializer array of char frequency
     for(int i=0; i<=255; i++){
@@ -12,19 +13,13 @@ void Encoding::calcFreqChar(QFile * src, int freqList[255], char ch){
     while(!src->atEnd()){
         src->getChar(&ch);
 
-        //ASCII Extended
-        int asc = 0;
-        asc = (int) ch;
-        if(asc<0){
-            asc += 256;
-        }
-
         //Counting char frequency
-        freqList[asc]++;
+        freqList[(unsigned char)ch]++;
     }
 
 //    for(int i=0; i<=255; i++){
-//        qDebug() << i << freqList[i];
+//        if(freqList[i]!=0)
+//            qDebug() << i << freqList[i];
 //    }
 
 }
@@ -38,7 +33,7 @@ void Encoding::buildNodeList(HuffNode * NodeList[255], int freqList[255]){
         //
         if(freqList[i] > 0){
             NodeList[sizeList] = new HuffNode;
-            NodeList[sizeList]->contain = (char) i;
+            NodeList[sizeList]->contain = (unsigned char) i;
             NodeList[sizeList]->freq = freqList[i];
             NodeList[sizeList]->lc = NULL;
             NodeList[sizeList]->rc = NULL;
@@ -49,9 +44,9 @@ void Encoding::buildNodeList(HuffNode * NodeList[255], int freqList[255]){
 
     sizeList--;
 
-//    for(int i=0; i<sizeList; i++){
+//   for(int i=0; i<sizeList; i++){
 //        qDebug() << (int) NodeList[i]->contain << NodeList[i]->freq;
-//    }
+//   }
 
 }
 
@@ -67,7 +62,7 @@ void Encoding::sortNodeList(HuffNode * NodeList[255]){
     HuffNode * aux = new HuffNode;
     for(int i=0; i < sizeList; i++){
         for(int j=0; j < sizeList; j++){
-            if(NodeList[j]->freq >= NodeList[j+1]->freq && NodeList[j]->freq != 0){
+            if(NodeList[j]->freq >= NodeList[j+1]->freq){
                 aux = NodeList[j+1];
                 NodeList[j+1] = NodeList[j];
                 NodeList[j] = aux;
@@ -76,9 +71,10 @@ void Encoding::sortNodeList(HuffNode * NodeList[255]){
         }
     }
 
-//    for(int i=0; i<sizeList; i++){
-//        qDebug() << (int) NodeList[i]->contain << NodeList[i]->freq << i;
-//    }
+//   for(int i=0; i<sizeList; i++){
+//        qDebug() << i <<(int) NodeList[i]->contain << NodeList[i]->freq;
+//   }
+
 }
 
 void Encoding::buildHuffTree(HuffNode *NodeList[255]){
@@ -98,9 +94,9 @@ void Encoding::buildHuffTree(HuffNode *NodeList[255]){
 
         sortNodeList(NodeList);
 
-//        for(int j=0; j<sizeList; j++){
-//            qDebug() << "List" << (int)NodeList[j]->contain << NodeList[j]->freq;
-//        }
+        /*for(int j=0; j<sizeList; j++){
+            qDebug() << "List" << (int)NodeList[j]->contain << NodeList[j]->freq;
+        }*/
 
     }
 }
@@ -109,35 +105,61 @@ void Encoding::buildHuffTree(HuffNode *NodeList[255]){
 void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList[255]){
 
     QString TreeCode;
-    QString code;
     QTextStream outdata(&TreeCode);
+
+    //Bit Array for char huffman binary code
+    int bits = 0;
+    QBitArray code(1);
 
     HuffNode * curr = new HuffNode;
     HuffNode * aux = new HuffNode;
 
+    //Current receiving huffman tree
     curr = TreeRoot;
 
+    /* QUANDO .TXT NÃO PASSA DAQUI. */
     curr->prev = new HuffNode;
 
     while(curr->prev != NULL) {
+
+        qDebug("entrou");
+        //Bit position        
+        int pos;
+
+        //Verifying if node is leaf
         if(curr->isLeaf==0){
+
+            //Verifying left children
             if(curr->lc!=NULL){
 
-                //qDebug() << "(";
-                code += '0';
+                qDebug() << "(";
+                bits++;
+
+                if(bits>1){                    
+                    code.resize(bits);
+                }
+
                 outdata << "(";
                 aux = curr;
                 curr = curr->lc;
-
                 curr->prev = aux;
-            } else if(curr->rc!=NULL) {
-                code += '1';
+
+            //Verifying right children
+            } else if(curr->rc!=NULL) {                
+
+                bits++;
+                pos = bits - 1;
+                code.resize(bits);
+                code.setBit(pos,1);
+
                 aux = curr;
                 curr = curr->rc;
                 curr->prev = aux;
 
+            //Have no children, move back
             } else {
-                //qDebug() << ")";
+
+                qDebug() << ")";
                 outdata << ")";
                 curr = curr->prev;
                 if(curr->lc == NULL){
@@ -146,9 +168,10 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
                     curr->lc = NULL;
                 }
 
-                int lpos;
-                lpos = code.size()-1;
-                code.remove(lpos, 1);
+                //Removing the last bit
+                bits--;
+                code.resize(bits);
+
             }
         }
 
@@ -156,25 +179,22 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
 
             //qDebug() << curr->contain << "BinCode:" << code;
 
-            int asc = (int) curr->contain;
-            if(asc < 0)
-                asc += 256;
-
-            CodeList[asc]->code = code;
-            //qDebug() << CodeList[asc]->code;
-
-            //qDebug() << curr->contain;
+            //Saving char huffman code
+            CodeList[curr->contain]->code = code;
 
             if(curr->contain == '(' || curr->contain == ')'){
-                outdata << '00x0';
+                outdata << '0';
             }
 
-            //Removing last code;
-            int lpos;
-            lpos = code.size()-1;
-            code.remove(lpos, 1);
+            //Removing the last bit
+            bits--;
+            code.resize(bits);
+
+            //Saving char at huffman tree
             outdata << curr->contain;
             curr = curr->prev;
+
+            //Unmounting huffman tree
             if(curr->lc == NULL){
                 curr->rc = NULL;
             } else {
@@ -183,7 +203,7 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
         }
     }
 
-    //qDebug() << TreeCode;
+    qDebug() << TreeCode;
 
     QTextStream outfile(out);
     outfile << TreeCode.size();
@@ -193,51 +213,49 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
 
 void Encoding::writeHuffCode(QFile *src, QFile *out, HuffNode *CodeList[255]){
 
-    QString HuffCode;
-
-    QTextStream outcode(&HuffCode);
+    QDataStream outcode(out);
+    outcode << src->fileName();
     char ch;
 
     while(!src->atEnd()){
 
         src->getChar(&ch);
 
-        //ASCII Extended
-        int asc = 0;
-        asc = (int) ch;
-        if(asc<0){
-            asc += 256;
-        }
+//        //ASCII Extended
+//        int asc = 0;
+//        asc = (int) ch;
+//        if(asc<0){
+//            asc += 256;
+//        }
 
-        outcode << CodeList[asc]->code;
+        outcode << CodeList[(unsigned char) ch]->code;
     }
 
-    QString hcode;
+//    QString hcode;
 
-    int j=0;
-    int codeasc=0;
-    char code;
-    for(int i=0; i<HuffCode.size(); i++){
-        if(HuffCode[i]=='1'){
-            codeasc += pow(2,j);
-        }
-        j++;
-        if(j==8){
-            j = 0;
-            code = (char) codeasc;
-            hcode += code;
-        }
+//    int j=0;
+//    int codeasc=0;
+//    char code;
+//    for(int i=0; i<HuffCode.size(); i++){
+//        if(HuffCode[i]=='1'){
+//            codeasc += pow(2,j);
+//        }
+//        j++;
+//        if(j==8){
+//            j = 0;
+//            code = (char) codeasc;
+//            hcode += code;
+//        }
 
-        if(i==HuffCode.size()-1 && j<8){
-            code = (char) codeasc;
-            hcode += code;
-        }
-    }
+//        if(i==HuffCode.size()-1 && j<8){
+//            code = (char) codeasc;
+//            hcode += code;
+//        }
+//    }
 
-    qDebug() << hcode.size();
-    QTextStream outfile(out);
-    outfile << src->fileName();
-    outfile << hcode;
+//    //qDebug() << hcode.size();
+//    QTextStream outfile(out);
+//    outfile << src->fileName();
 }
 
 void Encoding::encodeFile(QString inFileName, QString outFileName){
@@ -248,31 +266,30 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
         qDebug() << "failed.";
     }
 
-    int freqList[255];
-    char ch = 0;
-    HuffNode * NodeList[255];
+    int freqList[256];
+    HuffNode * NodeList[256];
 
     //Calculating Frequency
-    calcFreqChar(&inFile,freqList,ch);
-    qDebug("Frequency ready.");
+    calcFreqChar(&inFile,freqList);
+    //qDebug("Frequency ready.");
     inFile.close();
 
     //Building List
     buildNodeList(NodeList, freqList);
-    qDebug("Node List ready.");
+    //qDebug("Node List ready.");
 
     //Saving a copy of list
     HuffNode * ListCopy[255];
     buildCopyList(NodeList, ListCopy);
-    qDebug("Copy ready");
+    //qDebug("Copy ready");
 
     //Sorting List
     sortNodeList(NodeList);
-    qDebug("Node List sorted ready.");
+    //qDebug("Node List sorted ready.");
 
     //Building Huffman Tree and chars binary code
     buildHuffTree(NodeList);
-    qDebug("Huffman Tree ready.");
+    //qDebug("Huffman Tree ready.");
 
     //Creating output file
     QFile out(outFileName);
@@ -282,14 +299,16 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     //Building huffman binary code.
     writeHuffTree(&out, NodeList[255], ListCopy);
-    qDebug("Huffman Tree write.");
+    //qDebug("Huffman Tree write.");
 
     if(!inFile.open(QIODevice::ReadOnly)){
         qDebug() << "failed.";
     }
+
     //Building file coding.
     writeHuffCode(&inFile, &out, ListCopy);
-    qDebug("Huffman code ready.");
+    //qDebug("Huffman code ready.");
     inFile.close();
+    qDebug("Compression finished.");
 
 }

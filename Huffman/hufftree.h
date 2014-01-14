@@ -10,9 +10,9 @@
 class HuffNode {
 public:
     int freq;
-    char contain;
     bool isLeaf;
-    QString code;
+    unsigned char contain;
+    QBitArray code;
     HuffNode *lc;
     HuffNode *rc;
     HuffNode *prev;
