@@ -122,7 +122,6 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
 
     while(curr->prev != NULL) {
 
-        qDebug("entrou");
         //Bit position        
         int pos;
 
@@ -132,14 +131,14 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
             //Verifying left children
             if(curr->lc!=NULL){
 
-                qDebug() << "(";
+                //qDebug() << "(";
                 bits++;
 
                 if(bits>1){                    
                     code.resize(bits);
                 }
 
-                outdata << "(";
+                outdata << '(';
                 aux = curr;
                 curr = curr->lc;
                 curr->prev = aux;
@@ -159,8 +158,8 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
             //Have no children, move back
             } else {
 
-                qDebug() << ")";
-                outdata << ")";
+                //qDebug() << ")";
+                outdata << ')';
                 curr = curr->prev;
                 if(curr->lc == NULL){
                     curr->rc = NULL;
@@ -191,7 +190,7 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
             code.resize(bits);
 
             //Saving char at huffman tree
-            outdata << curr->contain;
+            outdata << (char) curr->contain;
             curr = curr->prev;
 
             //Unmounting huffman tree
@@ -203,7 +202,7 @@ void Encoding::writeHuffTree(QFile * out, HuffNode * TreeRoot,HuffNode *CodeList
         }
     }
 
-    qDebug() << TreeCode;
+    //qDebug() << TreeCode;
 
     QTextStream outfile(out);
     outfile << TreeCode.size();
@@ -221,41 +220,8 @@ void Encoding::writeHuffCode(QFile *src, QFile *out, HuffNode *CodeList[255]){
 
         src->getChar(&ch);
 
-//        //ASCII Extended
-//        int asc = 0;
-//        asc = (int) ch;
-//        if(asc<0){
-//            asc += 256;
-//        }
-
         outcode << CodeList[(unsigned char) ch]->code;
     }
-
-//    QString hcode;
-
-//    int j=0;
-//    int codeasc=0;
-//    char code;
-//    for(int i=0; i<HuffCode.size(); i++){
-//        if(HuffCode[i]=='1'){
-//            codeasc += pow(2,j);
-//        }
-//        j++;
-//        if(j==8){
-//            j = 0;
-//            code = (char) codeasc;
-//            hcode += code;
-//        }
-
-//        if(i==HuffCode.size()-1 && j<8){
-//            code = (char) codeasc;
-//            hcode += code;
-//        }
-//    }
-
-//    //qDebug() << hcode.size();
-//    QTextStream outfile(out);
-//    outfile << src->fileName();
 }
 
 void Encoding::encodeFile(QString inFileName, QString outFileName){
