@@ -338,7 +338,7 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     //Declaring initial vars
     QFile inFile(inFileName);
-    if(!inFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+    if(!inFile.open(QIODevice::ReadOnly)){
         qDebug() << "failed.";
     }
 
@@ -375,7 +375,7 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     //Building huffman binary code.
     writeHuffTree(TreeRoot, ListCopy);
-    //qDebug("Huffman Tree write.");
+    qDebug("Huffman Tree write.");
 
     if(!inFile.open(QIODevice::ReadOnly)){
         qDebug() << "failed.";
@@ -388,12 +388,12 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     //Creating output file
     QFile out(outFileName);
-    if(!out.open(QIODevice::WriteOnly | QIODevice::Text)){
+    if(!out.open(QIODevice::WriteOnly | QIODevice::Truncate)){
         qDebug("failed");
     }
 
     //Writing header of output file.
-    QTextStream outfile(&out);
+    //QDataStream outfile(&out);
 
     //Writing size of trash and huffman tree
     QString bitSize;
@@ -417,22 +417,34 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     //qDebug() << byteSize.size();
 
-    outfile.flush();
+    //qDebug() << byteSize.size();
+    //outfile << byteSize;
 
-    qDebug() << byteSize.size();
-    outfile << byteSize;
+    unsigned char * rec;
+    rec = (unsigned char*) byteSize.toLatin1().data();
+    out.write((char*)rec,byteSize.size());
 
-    qDebug() << inFile.fileName().size();
-    outfile << inFile.fileName();
+    //qDebug() << inFile.fileName().size();
+    //outfile << inFile.fileName();
 
-    qDebug() << HuffTree.size();
-    outfile << HuffTree;
+    rec = (unsigned char*) inFile.fileName().toLatin1().data();
+    out.write((char*)rec, inFile.fileName().size());
 
-    qDebug() << HuffCode.size();
-    outfile << HuffCode;
+    //qDebug() << HuffTree.size();
+    //outfile << HuffTree;
+
+    rec = (unsigned char*) HuffTree.toLatin1().data();
+    out.write((char*)rec,HuffTree.size());
+
+    //qDebug() << HuffCode.size();
+    //outfile << HuffCode;
+
+    rec = (unsigned char*) HuffCode.toLatin1().data();
+    out.write((char*)rec, HuffCode.size());
 
     int outsize = HuffCode.size() + HuffTree.size() + inFile.fileName().size() + byteSize.size();
-    qDebug() << "Tamanho do arquivo final" << outsize;
+    qDebug() << "Tamanho do arquivo esperado:" << outsize;
+    qDebug() << "Tamanho real: " << out.size();
 
     //Closing files.
     inFile.close();
