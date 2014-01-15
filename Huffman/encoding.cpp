@@ -61,13 +61,6 @@ void Encoding::buildNodeList(HuffNode * NodeList[256], HuffNode * ListCopy[256],
 
 }
 
-void Encoding::buildCopyList(HuffNode *NodeList[256], HuffNode *ListCopy[256]){
-    for(int i=0; i<256; i++){
-        ListCopy[i] = NodeList[i];
-    }
-}
-
-
 void Encoding::sortNodeList(HuffNode * NodeList[256]){
 
     HuffNode * aux = new HuffNode;
@@ -283,14 +276,11 @@ QString Encoding::convertBinToDec(QString entry){
             code += pow(2,(double) bits);
         }
 
-        if(bits==0){
-            //qDebug() << code;
+        if(bits==0){            
             output += code;
             code = 0;
         }
     }
-
-    //qDebug() << output;
 
     return output;
 
@@ -383,12 +373,6 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
     HuffNode * TreeRoot = new HuffNode;
     TreeRoot = NodeList[sizeList-1];
 
-    //Creating output file
-    QFile out(outFileName);
-    if(!out.open(QIODevice::WriteOnly)){
-        qDebug("failed");
-    }
-
     //Building huffman binary code.
     writeHuffTree(TreeRoot, ListCopy);
     //qDebug("Huffman Tree write.");
@@ -400,6 +384,13 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
     //Building file coding.
     writeHuffCode(&inFile, ListCopy);
     //qDebug("Huffman code ready.");
+
+
+    //Creating output file
+    QFile out(outFileName);
+    if(!out.open(QIODevice::WriteOnly | QIODevice::Text)){
+        qDebug("failed");
+    }
 
     //Writing header of output file.
     QTextStream outfile(&out);
@@ -424,12 +415,24 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     byteSize = convertBinToDec(bitSize);
 
-    //qDebug() << byteSize;
+    //qDebug() << byteSize.size();
 
+    outfile.flush();
+
+    qDebug() << byteSize.size();
     outfile << byteSize;
+
+    qDebug() << inFile.fileName().size();
     outfile << inFile.fileName();
+
+    qDebug() << HuffTree.size();
     outfile << HuffTree;
+
+    qDebug() << HuffCode.size();
     outfile << HuffCode;
+
+    int outsize = HuffCode.size() + HuffTree.size() + inFile.fileName().size() + byteSize.size();
+    qDebug() << "Tamanho do arquivo final" << outsize;
 
     //Closing files.
     inFile.close();
