@@ -6,13 +6,15 @@
 #include <QFile>
 #include <QDataStream>
 #include <QBitArray>
+#include <math.h>
 
 class HuffNode {
 public:
     int freq;
     bool isLeaf;
+    bool visited;
     unsigned char contain;
-    QBitArray code;
+    QString code;
     HuffNode *lc;
     HuffNode *rc;
     HuffNode *prev;

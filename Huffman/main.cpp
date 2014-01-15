@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 {         
     Encoding * Encode = new Encoding;
 
-    Encode->encodeFile("in.jpg","out.huff");
+    Encode->encodeFile("in.txt","out.huff");
     return 0;
 
     QString a;
