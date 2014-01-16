@@ -8,11 +8,15 @@ void showHelpMe(){
 }
 
 int main(int argc, char *argv[])
-{         
-    Encoding * Encode = new Encoding;
+{
+    Decoding * Decode = new Decoding;
+    Decode->decodeFile("out.huff","");
+    return;
 
-    Encode->encodeFile("in.txt","out.huff");
-    return 0;
+//    Encoding * Encode = new Encoding;
+
+//    Encode->encodeFile("in.txt","out.huff");
+//    return 0;
 
     QString a;
     a = argv[1];
@@ -28,14 +32,16 @@ int main(int argc, char *argv[])
         //Compression Standart.
         if(a == "-c"){
 
-//            Encoding * Encode = new Encoding;
+            Encoding * Encode = new Encoding;
 
-//            Encode->encodeFile("in.txt","out.huff");
+            Encode->encodeFile("in.txt","out.huff");
+            return 0;
 
             //Compression with different path of output file.
             if(c == "-o"){
 
                 Encode->encodeFile(b,d);
+                return 0;
             }
         }
         //Descompression with different path of output file.

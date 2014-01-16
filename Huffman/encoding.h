@@ -8,10 +8,11 @@ class Encoding
 {
 public:
 
-    int sizeList;
     QString HuffTree;
     QString HuffCode;
+
     int tsize;
+    int sizeList;
 
     //Encoding Functions.
     void initHuffList(HuffNode * NodeList[], HuffNode * ListCopy[],int freqList[]);

@@ -339,7 +339,8 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
     //Declaring initial vars
     QFile inFile(inFileName);
     if(!inFile.open(QIODevice::ReadOnly)){
-        qDebug() << "failed.";
+        qDebug() << "File not found.";
+        return;
     }
 
     int freqList[256];
@@ -357,10 +358,6 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
     //Building List
     buildNodeList(NodeList, ListCopy,freqList);
     qDebug("Node List ready.");
-
-    //Saving a copy of list
-//    buildCopyList(NodeList, ListCopy);
-    qDebug("Copy ready");
 
     //Sorting List
     sortNodeList(NodeList);
@@ -429,6 +426,7 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     rec = (unsigned char*) inFile.fileName().toLatin1().data();
     out.write((char*)rec, inFile.fileName().size());
+    out.putChar(')');
 
     //qDebug() << HuffTree.size();
     //outfile << HuffTree;
