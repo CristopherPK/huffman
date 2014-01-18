@@ -8,8 +8,8 @@ class Encoding
 {
 public:
 
-    QString HuffTree;
-    QString HuffCode;
+    QByteArray HuffTree;
+    QByteArray HuffCode;
 
     int tsize;
     int sizeList;
@@ -29,9 +29,9 @@ public:
 
     void writeHuffCode(QFile * src, HuffNode * CodeList[]);
 
-    QString convertDecToBin(int entry);
+    QByteArray convertDecToBin(int entry);
 
-    QString convertBinToDec(QString entry);
+    QByteArray convertBinToDec(QByteArray entry);
 
     void freeHuffTree(HuffNode *NodeList[], HuffNode *ListCopy[]);
 

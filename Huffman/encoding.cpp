@@ -203,7 +203,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
 //    QTextStream outfile(out);
 //    outfile << TreeCode;
 
-    HuffTree = TreeCode;
+    HuffTree = TreeCode.toLocal8Bit();
 
 }
 
@@ -257,26 +257,29 @@ void Encoding::writeHuffCode(QFile *src, HuffNode *CodeList[256]){
     //qDebug() << HuffCode;
 }
 
-QString Encoding::convertBinToDec(QString entry){
+QByteArray Encoding::convertBinToDec(QByteArray entry){
 
     //qDebug() << entry;
 
-    QString output;
+    QByteArray output;
 
-    unsigned char code;
+    unsigned char code = 0;
 
     for(int i=0;i<entry.size(); i++){
+        //qDebug() << entry[i];
         int bits = 7;
         if(i>7){
             bits -= i%8;
         } else {
             bits -= i;
         }
-        if(entry[i]=='1'){
+
+        if(entry[i]=='1'){            
             code += pow(2,(double) bits);
         }
 
         if(bits==0){            
+            //qDebug() << code;
             output += code;
             code = 0;
         }
@@ -286,9 +289,9 @@ QString Encoding::convertBinToDec(QString entry){
 
 }
 
-QString Encoding::convertDecToBin(int entry){
+QByteArray Encoding::convertDecToBin(int entry){
 
-    QString bitSize;
+    QByteArray bitSize;
 
     int bin[8];
 
@@ -305,14 +308,19 @@ QString Encoding::convertDecToBin(int entry){
             bin[a] = entry/2;
         }
         entry = entry/2;
+        //qDebug() << entry;
 
     }while(entry>=2);
+
+    if(entry==1){
+        bin[a] = 1;
+    }
 
     bool warn = false;
 
     for(int i=0;i<8;i++){
         if(bin[i] == 0 && warn == true){
-            bitSize += '0';
+            bitSize += '0';            
         }
         if(bin[i] == 1){
             bitSize += '1';
@@ -385,16 +393,17 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     //Creating output file
     QFile out(outFileName);
-    if(!out.open(QIODevice::WriteOnly | QIODevice::Truncate)){
+    if(!out.open(QIODevice::WriteOnly)){
         qDebug("failed");
     }
 
     //Writing header of output file.
-    //QDataStream outfile(&out);
 
     //Writing size of trash and huffman tree
-    QString bitSize;
-    QString byteSize;
+    QByteArray bitSize;
+    QByteArray byteSize;
+
+    qDebug() <<"Tree: " <<HuffTree.size();
 
     bitSize += convertDecToBin(HuffTree.size());
 
@@ -402,45 +411,38 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
         bitSize.prepend('0');
     }
 
+    qDebug() <<"Trash: " <<tsize;
+
     bitSize.prepend(convertDecToBin(tsize));
 
     while(bitSize.size()<16){
         bitSize.prepend('0');
     }
 
-    //qDebug() << bitSize << bitSize.size();
+    qDebug() << "Bytes(2): " <<bitSize;
 
     byteSize = convertBinToDec(bitSize);
 
-    //qDebug() << byteSize.size();
+    //qDebug() << byteSize;
 
-    //qDebug() << byteSize.size();
-    //outfile << byteSize;
-
-    unsigned char * rec;
-    rec = (unsigned char*) byteSize.toLatin1().data();
-    out.write((char*)rec,byteSize.size());
+    out.write(byteSize);
 
     //qDebug() << inFile.fileName().size();
-    //outfile << inFile.fileName();
 
-    rec = (unsigned char*) inFile.fileName().toLatin1().data();
-    out.write((char*)rec, inFile.fileName().size());
-    out.putChar(')');
+    QByteArray fileName;
+    fileName = inFile.fileName().toLocal8Bit();
+    out.write(fileName);
 
     //qDebug() << HuffTree.size();
-    //outfile << HuffTree;
 
-    rec = (unsigned char*) HuffTree.toLatin1().data();
-    out.write((char*)rec,HuffTree.size());
+    out.write(HuffTree);
 
     //qDebug() << HuffCode.size();
-    //outfile << HuffCode;
 
-    rec = (unsigned char*) HuffCode.toLatin1().data();
-    out.write((char*)rec, HuffCode.size());
+    out.write(HuffCode);
 
     int outsize = HuffCode.size() + HuffTree.size() + inFile.fileName().size() + byteSize.size();
+
     qDebug() << "Tamanho do arquivo esperado:" << outsize;
     qDebug() << "Tamanho real: " << out.size();
 
