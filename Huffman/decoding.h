@@ -7,10 +7,11 @@ class Decoding
 {
 public:
 
-
     int TreeSize;
 
     int TrashSize;
+
+    HuffNode * TreeRoot;
 
     QByteArray HuffCode;
 
@@ -22,11 +23,11 @@ public:
 
     QByteArray getFileName(QFile * src);
 
-    void buildHuffTree(QFile * src, HuffNode *TreeRoot);
+    void buildHuffTree(QFile * src);
 
     void buildHuffCode(QFile * src);
 
-    void writeDecodeFile(QFile * out, HuffNode *TreeRoot);
+    void writeDecodeFile(QFile * out);
 
     void freeHuffTree(HuffNode * TreeRoot);
 

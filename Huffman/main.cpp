@@ -10,14 +10,15 @@ void showHelpMe(){
 int main(int argc, char *argv[])
 {
 
+
     Decoding * Decode = new Decoding;
     Decode->decodeFile("out.huff","");
     return 0;
 
-//    Encoding * Encode = new Encoding;
+    Encoding * Encode = new Encoding;
 
-//    Encode->encodeFile("in.txt","out.huff");
-//    return 0;
+    Encode->encodeFile("in.txt","out.huff");
+    return 0;
 
 
     QString a;

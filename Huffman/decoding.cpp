@@ -111,11 +111,9 @@ QByteArray Decoding::getFileName(QFile *src){
     return FileName;
 }
 
-void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
+void Decoding::buildHuffTree(QFile *src){
 
     src->seek(src->pos()-1);
-
-    TreeRoot = NULL;
 
     char ch;
     bool warn = false;
@@ -130,17 +128,32 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
 
         if(ch=='('){
             if(warn == true){
-                qDebug() << ch;
+                //qDebug() << ch;
                 warn = false;
-                TreeRoot->contain = ch;
-                TreeRoot->isLeaf = 1;
-                TreeRoot = TreeRoot->prev;
+                if(TreeRoot->lc==NULL) {
+                    TreeRoot->lc = new HuffNode;
+                    TreeRoot->lc->contain = ch;
+                    //qDebug() << TreeRoot->lc->contain;
+                    TreeRoot->lc->isLeaf = 1;
+                }
+
+                else {
+                    //qDebug() << ch << "Right";
+                    TreeRoot->rc = new HuffNode;
+                    TreeRoot->rc->prev = new HuffNode;
+                    TreeRoot->rc->prev = TreeRoot;
+                    TreeRoot = TreeRoot->rc;
+                    TreeRoot->contain = ch;
+                    TreeRoot->isLeaf = 1;
+                    TreeRoot = TreeRoot->prev;
+                }
 
             } else if(TreeRoot == NULL){
                 TreeRoot = new HuffNode;
                 TreeRoot->isLeaf = 0;
                 TreeRoot->lc = TreeRoot->rc = 0;
                 TreeRoot->prev = new HuffNode;
+                TreeRoot->prev = TreeRoot;
             }
             else if(TreeRoot->lc==NULL){
                 //qDebug() << "Left";
@@ -149,6 +162,7 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
                 TreeRoot->lc->prev = TreeRoot;
                 TreeRoot = TreeRoot->lc;
                 TreeRoot->lc = TreeRoot->rc = 0;
+                TreeRoot->isLeaf = 0;
             } else if(TreeRoot->rc==NULL){
                 //qDebug() << "Right";
                 TreeRoot->rc = new HuffNode;
@@ -156,19 +170,36 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
                 TreeRoot->rc->prev = TreeRoot;
                 TreeRoot = TreeRoot->rc;
                 TreeRoot->lc = TreeRoot->rc = 0;
+                TreeRoot->isLeaf = 0;
             }
         }
 
         else if(ch==')'){
             if(warn == true){
-                qDebug() << ch;
+                //qDebug() << ch;
                 warn = false;
-                TreeRoot->contain = ch;
-                TreeRoot->isLeaf = 1;
-                TreeRoot = TreeRoot->prev;
+                if(TreeRoot->lc==NULL) {
+                    TreeRoot->lc = new HuffNode;
+                    TreeRoot->lc->contain = ch;
+                    //qDebug() << TreeRoot->lc->contain;
+                    TreeRoot->lc->isLeaf = 1;
+                }
+
+                else {
+                    //qDebug() << ch << "Right";
+                    TreeRoot->rc = new HuffNode;
+                    TreeRoot->rc->prev = new HuffNode;
+                    TreeRoot->rc->prev = TreeRoot;
+                    TreeRoot = TreeRoot->rc;
+                    TreeRoot->contain = ch;
+                    TreeRoot->isLeaf = 1;
+                    TreeRoot = TreeRoot->prev;
+                }
             } else {
                 //qDebug() << "Back";
-                TreeRoot = TreeRoot->prev;
+                if(TreeRoot->prev != NULL){
+                    TreeRoot = TreeRoot->prev;
+                }
             }
         }
 
@@ -178,23 +209,37 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
                 if(warn == true){
                     //qDebug() << ch;
                     warn = false;
-                    TreeRoot->contain = ch;
-                    TreeRoot->isLeaf = 1;
-                    TreeRoot = TreeRoot->prev;
+                    if(TreeRoot->lc==NULL) {
+                        TreeRoot->lc = new HuffNode;
+                        TreeRoot->lc->contain = ch;
+                        //qDebug() << TreeRoot->lc->contain;
+                        TreeRoot->lc->isLeaf = 1;
+                    }
+
+                    else {
+                        //qDebug() << ch << "Right";
+                        TreeRoot->rc = new HuffNode;
+                        TreeRoot->rc->prev = new HuffNode;
+                        TreeRoot->rc->prev = TreeRoot;
+                        TreeRoot = TreeRoot->rc;
+                        TreeRoot->contain = ch;
+                        TreeRoot->isLeaf = 1;
+                        TreeRoot = TreeRoot->prev;
+                    }
                 } else {
                     warn = true;
                 }
             }
 
-            else if(TreeRoot->lc==NULL) {
+            if(TreeRoot->lc==NULL) {
                 TreeRoot->lc = new HuffNode;
                 TreeRoot->lc->contain = ch;
-                qDebug() << TreeRoot->lc->contain;
+                //qDebug() << TreeRoot->lc->contain;
                 TreeRoot->lc->isLeaf = 1;
             }
 
             else {
-                qDebug() << ch << "Right";
+                //qDebug() << ch << "Right";
                 TreeRoot->rc = new HuffNode;
                 TreeRoot->rc->prev = new HuffNode;
                 TreeRoot->rc->prev = TreeRoot;
@@ -206,8 +251,7 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
 
         }
 
-    }
-
+    }    
 }
 
 void Decoding::buildHuffCode(QFile * src){
@@ -229,7 +273,7 @@ void Decoding::buildHuffCode(QFile * src){
     qDebug() << HuffCode;
 }
 
-void Decoding::writeDecodeFile(QFile *out, HuffNode *TreeRoot){
+void Decoding::writeDecodeFile(QFile *out){
 
     HuffNode * curr = new HuffNode;
     curr = TreeRoot;
@@ -271,9 +315,7 @@ void Decoding::decodeFile(QString inFileName, QString outPath)
 
     qDebug() << outFileName;
 
-    HuffNode * HuffTree = new HuffNode;
-
-    buildHuffTree(&inFile,HuffTree);
+    buildHuffTree(&inFile);
 
     buildHuffCode(&inFile);
 
@@ -282,7 +324,7 @@ void Decoding::decodeFile(QString inFileName, QString outPath)
         qDebug() << "File can not be descompressed. Try again";
     }
 
-    writeDecodeFile(&out, HuffTree);
+    writeDecodeFile(&out);
     qDebug() << "Descompression finished.";
 
     inFile.close();
