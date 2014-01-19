@@ -270,18 +270,19 @@ void Decoding::buildHuffCode(QFile * src){
 
     HuffCode.resize(size);
 
-    qDebug() << HuffCode;
+    //qDebug() << HuffCode;
 }
 
 void Decoding::writeDecodeFile(QFile *out){
 
     HuffNode * curr = new HuffNode;
+    QByteArray outCode;
     curr = TreeRoot;
 
-    qDebug() << curr->lc->contain;
+    //qDebug() << HuffCode.size();
 
     for(int i=0; i<HuffCode.size(); i++){
-        qDebug() << i;
+        //qDebug() << i;
         if(HuffCode[i]=='0'){
             curr = curr->lc;
         } else {
@@ -291,10 +292,13 @@ void Decoding::writeDecodeFile(QFile *out){
         if(curr->isLeaf==1){
             qDebug() << curr->contain;
             //char ch = curr->contain;
-            out->putChar((char) curr->contain);
+            //out->putChar((char)curr->contain);
+            outCode += ((char )curr->contain);
             curr = TreeRoot;
         }
     }
+
+    out->write(outCode);
 }
 
 void Decoding::decodeFile(QString inFileName, QString outPath)
@@ -322,7 +326,7 @@ void Decoding::decodeFile(QString inFileName, QString outPath)
     QFile out(outPath + outFileName);
     if(!out.open(QIODevice::WriteOnly)){
         qDebug() << "File can not be descompressed. Try again";
-    }
+    }    
 
     writeDecodeFile(&out);
     qDebug() << "Descompression finished.";

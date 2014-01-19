@@ -296,13 +296,13 @@ QByteArray Encoding::convertDecToBin(int entry){
 
     QByteArray bitSize;
 
-    int bin[8];
+    int bin[13];
 
-    for(int i=0;i<8;i++){
+    for(int i=0;i<13;i++){
         bin[i]=0;
     }
 
-    int a=7;
+    int a=12;
 
     do{
         bin[a] = entry % 2;
@@ -321,7 +321,7 @@ QByteArray Encoding::convertDecToBin(int entry){
 
     bool warn = false;
 
-    for(int i=0;i<8;i++){
+    for(int i=0;i<13;i++){
         if(bin[i] == 0 && warn == true){
             bitSize += '0';            
         }
@@ -409,6 +409,8 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
     qDebug() <<"Tree: " <<HuffTree.size();
 
     bitSize += convertDecToBin(HuffTree.size());
+
+    qDebug() << bitSize;
 
     while(bitSize.size()<13){
         bitSize.prepend('0');
