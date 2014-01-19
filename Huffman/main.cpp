@@ -14,6 +14,12 @@ int main(int argc, char *argv[])
     Decode->decodeFile("out.huff","");
     return 0;
 
+//    Encoding * Encode = new Encoding;
+
+//    Encode->encodeFile("in.txt","out.huff");
+//    return 0;
+
+
     QString a;
     a = argv[1];
     QString b;

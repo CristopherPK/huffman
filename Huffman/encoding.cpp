@@ -209,8 +209,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
 
 void Encoding::writeHuffCode(QFile *src, HuffNode *CodeList[256]){
 
-    QString huffCode;
-    QTextStream outcode(&huffCode);
+    QByteArray huffCode;
 
     char ch;
 
@@ -218,7 +217,7 @@ void Encoding::writeHuffCode(QFile *src, HuffNode *CodeList[256]){
 
         src->getChar(&ch);
 
-        outcode << CodeList[(unsigned char) ch]->code;
+        huffCode += CodeList[(unsigned char) ch]->code;
 
     }
 
@@ -234,9 +233,11 @@ void Encoding::writeHuffCode(QFile *src, HuffNode *CodeList[256]){
         rest = huffCode.size()%8;
     }
 
+    //qDebug() << huffCode;
+
     tsize = trash;
 
-    unsigned char code;
+    unsigned char code = 0;
 
     for(int i=0;i<huffCode.size(); i++){
         int bits = 7;
@@ -245,16 +246,18 @@ void Encoding::writeHuffCode(QFile *src, HuffNode *CodeList[256]){
         } else {
             bits -= i;
         }
+
         if(huffCode[i]=='1'){
             code += pow(2,(double) bits);
+            //qDebug() << code;
         }
 
         if(bits==0){
+            //qDebug() << code;
             HuffCode += code;
             code = 0;
         }
-    }
-    //qDebug() << HuffCode;
+    }    
 }
 
 QByteArray Encoding::convertBinToDec(QByteArray entry){
@@ -437,7 +440,7 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     out.write(HuffTree);
 
-    //qDebug() << HuffCode.size();
+    //qDebug() << HuffCode;
 
     out.write(HuffCode);
 
