@@ -9,13 +9,9 @@ void showHelpMe(){
 
 int main(int argc, char *argv[])
 {
-//    Decoding * Decode = new Decoding;
-//    Decode->decodeFile("out.huff","");
-//    return;
 
-    Encoding * Encode = new Encoding;
-
-    Encode->encodeFile("in.txt","out.huff");
+    Decoding * Decode = new Decoding;
+    Decode->decodeFile("out.huff","");
     return 0;
 
     QString a;
@@ -34,7 +30,7 @@ int main(int argc, char *argv[])
 
             Encoding * Encode = new Encoding;
 
-            Encode->encodeFile("in.txt","out.huff");
+            Encode->encodeFile(b,"out.huff");
             return 0;
 
             //Compression with different path of output file.

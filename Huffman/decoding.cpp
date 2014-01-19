@@ -1,9 +1,29 @@
 #include "decoding.h"
 
+int Decoding::convertBinToDec(QByteArray entry){
 
-QString Decoding::convertDecToBin(int entry){
+    //qDebug() << entry;
 
-    QString bitSize;
+    int size = 0;
+
+    for(int i=0;i<entry.size(); i++){
+        //qDebug() << entry[i];
+        int bits = entry.size() - 1;
+
+        bits -= i;
+
+        if(entry[i]=='1'){
+            size += pow(2,(double) bits);
+        }
+    }
+
+    return size;
+
+}
+
+QByteArray Decoding::convertDecToBin(int entry){
+
+    QByteArray bitSize;
 
     int bin[8];
 
@@ -20,8 +40,13 @@ QString Decoding::convertDecToBin(int entry){
             bin[a] = entry/2;
         }
         entry = entry/2;
+        //qDebug() << entry;
 
     }while(entry>=2);
+
+    if(entry==1){
+        bin[a] = 1;
+    }
 
     bool warn = false;
 
@@ -40,161 +65,210 @@ QString Decoding::convertDecToBin(int entry){
 
 }
 
-QString Decoding::convertBinToDec(QString entry){
+void Decoding::calcSizeTree(QFile *src){
 
-    //qDebug() << entry;
-
-    QString output;
-
-    unsigned char code;
-
-    for(int i=0;i<entry.size(); i++){
-        int bits = 7;
-        if(i>7){
-            bits -= i%8;
-        } else {
-            bits -= i;
-        }
-        if(entry[i]=='1'){
-            code += pow(2,(double) bits);
-        }
-
-        if(bits==0){
-            output += code;
-            code = 0;
-        }
-    }
-
-    return output;
-
-}
-
-void Encoding::calcSizeTree(int TreeSize, int TrashSize){
-
-    //Reading first 2 bytes an calculating trash and tree sizes
-    QString header = inFile.read(2);
-    bool ok;
-    int decSize = header.toInt(&ok);
-    header = convertDecToBin(decSize); //header is now a binary number
-
-    QString trashSize;
-    QString treeSize;
-    for(int i = 0; i < 16; ++i)
-    {
-        if(i < 3)
-            trashSize[i] = header[i];
-        else
-            treeSize[i] = header[i];
-    }
-
-    trashSize = convertBinToDec(trashSize);
-    treeSize = convertBinToDec(treeSize);
-
-    qDebug() << trashSize;
-    qDebug() << treeSize;
-
-    int integerTreeSize = treeSize.toInt(&ok);
-
-}
-
-QString Decoding::getFileName(QFile * src){
-
-    //Read original file name
-    header = inFile.read(140);
-
-    QString originalName;
-
-    int marker;
-    for(int i = 2; i < 140; ++i){
-
-        if(header[i] == ')'){
-            marker = i;
-            break;
-        }
-    }
-    for(int i = 2; i < marker; ++i){
-        originalName[i] = header[i];
-    }
-}
-
-void Decoding::buildHuffTree(QFile * src, HuffNode *TreeRoot,  int treeSize, int markerIndice){
+    QByteArray bytes;
+    int byteCount = 0;
 
     char ch;
-    bool warn;
-    int countdown = treeSize;
-    src->seek(markerIndice + 1); //Seek to marker at the end of file name + 1
 
-    while(countdown > 0){
+    while(byteCount < 2){
+        byteCount++;
+        src->getChar(&ch);
+        bytes += convertDecToBin((unsigned char)ch);
+    }
+
+    QByteArray trashSize;
+    QByteArray treeSize;
+
+    for(int i=0;i<bytes.size(); i++){
+        if(i<3){
+            trashSize += bytes[i];
+        } else {
+            treeSize += bytes[i];
+        }
+    }
+
+    TrashSize = convertBinToDec(trashSize);
+    TreeSize = convertBinToDec(treeSize);
+
+}
+
+QByteArray Decoding::getFileName(QFile *src){
+
+    QByteArray FileName;
+
+    char ch;
+
+    while(!src->atEnd()){
 
         src->getChar(&ch);
 
-        if(ch=='0'){
+        if(ch=='('){
+            break;
+        }
 
-            warn = true;
+        FileName += ch;
+    }
 
-        } else if(ch == '('){
+    return FileName;
+}
 
-            if(warn==true){
+void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
+
+    src->seek(src->pos()-1);
+
+    TreeRoot->lc = TreeRoot->rc = TreeRoot->prev = 0;
+
+    char ch;
+    bool warn = false;
+    int count = 0;
+
+    while(count < TreeSize){
+
+        src->getChar(&ch);
+        qDebug() << ch;
+
+        if(ch=='('){
+            if(warn == true){
+
                 TreeRoot->contain = ch;
+                TreeRoot->isLeaf = 1;
                 TreeRoot = TreeRoot->prev;
-            } else {
+            }
+            else if(TreeRoot->lc==NULL){
+                qDebug() << "Left";
                 TreeRoot->lc = new HuffNode;
                 TreeRoot->lc->prev = TreeRoot;
                 TreeRoot = TreeRoot->lc;
-            }
-
-        } else if(ch == ')'){
-
-            if(warn==true){
-                TreeRoot->contain = ch;
-                TreeRoot = TreeRoot->prev;
-            } else {
-                TreeRoot = TreeRoot->prev;
-            }
-
-        } else {
-            if(TreeRoot->lc == NULL){
-                warn = false;
-                TreeRoot->contain = ch;
-            } else {
+                TreeRoot->lc = TreeRoot->rc = 0;
+            } else if(TreeRoot->rc==NULL){
+                qDebug() << "Right";
                 TreeRoot->rc = new HuffNode;
-                TreeRoot->rc->contain = ch;
+                TreeRoot->rc->prev = TreeRoot;
+                TreeRoot = TreeRoot->rc;
+                TreeRoot->lc = TreeRoot->rc = 0;
             }
-
-            TreeRoot = TreeRoot->prev;
         }
 
-        --countdown;
+        else if(ch==')'){
+            if(warn == true){
+                warn == false;
+                TreeRoot->contain = ch;
+                TreeRoot->isLeaf = 1;
+                TreeRoot = TreeRoot->prev;
+            } else {
+                TreeRoot = TreeRoot->prev;
+            }
+        }
+
+        else {
+
+            TreeRoot = TreeRoot->prev;
+            if(ch == '0'){
+                if(warn == true){
+                    TreeRoot->contain = ch;
+                    TreeRoot->isLeaf = 1;
+                    TreeRoot = TreeRoot->prev;
+                }
+
+                warn = true;
+            }
+
+            else if(TreeRoot->lc==NULL) {
+                qDebug() << "Left";
+                TreeRoot = TreeRoot->lc;
+                TreeRoot->contain = ch;
+                TreeRoot->isLeaf = 1;
+                TreeRoot = TreeRoot->prev;
+            }
+
+            else {
+                qDebug() << "Right";
+                TreeRoot->rc = new HuffNode;
+                TreeRoot->rc->prev = TreeRoot;
+                TreeRoot = TreeRoot->rc;
+                TreeRoot->contain = ch;
+                TreeRoot->isLeaf = 1;
+                TreeRoot = TreeRoot->prev;
+            }
+
+        }
+
+        count++;
+
     }
 
-}
-
-void Decoding::writeDecodeFile(){
 
 }
 
+void Decoding::buildHuffCode(QFile * src){
+    char ch;
+
+    src->seek(src->pos()-1);
+
+    while(!src->atEnd()){
+        src->getChar(&ch);
+        HuffCode += convertDecToBin((unsigned char) ch);
+    }
+
+    int size = HuffCode.size() - TrashSize;
+
+    HuffCode.resize(size);
+
+    qDebug() << HuffCode;
+}
+
+void Decoding::writeDecodeFile(QFile *out, HuffNode *TreeRoot){
+
+    HuffNode * curr = new HuffNode;
+    curr = TreeRoot;
+
+    for(int i=0; i<HuffCode.size(); i++){
+        if(HuffCode[i]=='0'){
+            curr = curr->lc;
+        } else {
+            curr = curr->rc;
+        }
+
+        if(curr->isLeaf==1){
+            char * ref;
+            ref = (char *)curr->contain;
+            out->write(ref);
+            curr = TreeRoot;
+        }
+    }
+}
 
 void Decoding::decodeFile(QString inFileName, QString outPath)
 {
     //Opening source file
     QFile inFile(inFileName);
     if(!inFile.open(QIODevice::ReadOnly)){
-        qDebug() << "File not found.";
-        return;
+        qDebug() << "failed.";
     }
 
-    int TreeSize;
-    int TrashSize;
+    calcSizeTree(&inFile);
 
-    //Getting tree size and trash size.
-    calcSizeTree(TreeSize, TrashSize);
+    qDebug() << "Tree Size: " <<TreeSize;
+    qDebug() << "Trash Size: " <<TrashSize;
 
-    //Getting file name.
     QString outFileName;
-    outFileName = getFileName(inFileName, TreeSize);
+    outFileName = getFileName(&inFile);
 
-    //Re-building the tree
-    HuffNode *TreeRoot = new HuffNode;
+    qDebug() << outFileName;
 
-    buildHuffTree(&inFile, TreeRoot, integerTreeSize, marker);
+    HuffNode * HuffTree = new HuffNode;
+
+    buildHuffTree(&inFile,HuffTree);
+
+    buildHuffCode(&inFile);
+
+    QFile out(outPath + outFileName);
+    if(!out.open(QIODevice::WriteOnly)){
+        qDebug() << "File can not be descompressed. Try again";
+    }
+
+    writeDecodeFile(&out, HuffTree);
+
 }

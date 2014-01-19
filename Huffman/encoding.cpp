@@ -176,7 +176,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
 
             //qDebug() << CodeList[(int) curr->contain]->code;
 
-            if(curr->contain == '(' || curr->contain == ')'){
+            if(curr->contain == '(' || curr->contain == ')' || curr->contain == '0'){
                 outdata << '0';
             }
 

@@ -17,7 +17,6 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     encoding.cpp \
-    hufftree.cpp \
     decoding.cpp
 
 HEADERS += \

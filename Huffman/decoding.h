@@ -7,17 +7,26 @@ class Decoding
 {
 public:
 
-    QString convertDecToBin(int entry);
 
-    QString convertBinToDec(QString entry);
+    int TreeSize;
 
-    void calcSizeTree(int TreeSize, int TrashSize);
+    int TrashSize;
 
-    QString getFileName(QFile * src, int TreeSize);
+    QByteArray HuffCode;
 
-    void buildHuffTree(QFile * src, HuffNode *TreeRoot, int treeSize, int markerIndice);
+    QByteArray convertDecToBin(int entry);
 
-    void writeDecodeFile();
+    int convertBinToDec(QByteArray entry);
+
+    void calcSizeTree(QFile * src);
+
+    QByteArray getFileName(QFile * src);
+
+    void buildHuffTree(QFile * src, HuffNode *TreeRoot);
+
+    void buildHuffCode(QFile * src);
+
+    void writeDecodeFile(QFile * out, HuffNode *TreeRoot);
 
     void freeHuffTree(HuffNode * TreeRoot);
 
