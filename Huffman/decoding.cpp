@@ -118,7 +118,9 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
 
     src->seek(src->pos()-1);
 
-    TreeRoot->lc = TreeRoot->rc = TreeRoot->prev = 0;
+    TreeRoot->lc = TreeRoot->rc = 0;
+    TreeRoot->prev = new HuffNode;
+    TreeRoot->prev = TreeRoot;
 
     char ch;
     bool warn = false;
@@ -126,25 +128,30 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
 
     while(count < TreeSize){
 
+        count++;
+        //qDebug() << count;
+
         src->getChar(&ch);
-        qDebug() << ch;
 
         if(ch=='('){
             if(warn == true){
-
+                //qDebug() << ch;
+                warn = false;
                 TreeRoot->contain = ch;
                 TreeRoot->isLeaf = 1;
                 TreeRoot = TreeRoot->prev;
             }
             else if(TreeRoot->lc==NULL){
-                qDebug() << "Left";
+                //qDebug() << "Left";
                 TreeRoot->lc = new HuffNode;
+                TreeRoot->lc->prev = new HuffNode;
                 TreeRoot->lc->prev = TreeRoot;
                 TreeRoot = TreeRoot->lc;
                 TreeRoot->lc = TreeRoot->rc = 0;
             } else if(TreeRoot->rc==NULL){
-                qDebug() << "Right";
+                //qDebug() << "Right";
                 TreeRoot->rc = new HuffNode;
+                TreeRoot->rc->prev = new HuffNode;
                 TreeRoot->rc->prev = TreeRoot;
                 TreeRoot = TreeRoot->rc;
                 TreeRoot->lc = TreeRoot->rc = 0;
@@ -153,39 +160,42 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
 
         else if(ch==')'){
             if(warn == true){
-                warn == false;
+                //qDebug() << ch;
+                warn = false;
                 TreeRoot->contain = ch;
                 TreeRoot->isLeaf = 1;
                 TreeRoot = TreeRoot->prev;
             } else {
+                //qDebug() << "Back";
                 TreeRoot = TreeRoot->prev;
             }
         }
 
         else {
 
-            TreeRoot = TreeRoot->prev;
             if(ch == '0'){
                 if(warn == true){
+                    //qDebug() << ch;
+                    warn = false;
                     TreeRoot->contain = ch;
                     TreeRoot->isLeaf = 1;
                     TreeRoot = TreeRoot->prev;
+                } else {
+                    warn = true;
                 }
-
-                warn = true;
             }
 
             else if(TreeRoot->lc==NULL) {
-                qDebug() << "Left";
-                TreeRoot = TreeRoot->lc;
+                //qDebug() << ch << "Left";
                 TreeRoot->contain = ch;
                 TreeRoot->isLeaf = 1;
                 TreeRoot = TreeRoot->prev;
             }
 
             else {
-                qDebug() << "Right";
+                //qDebug() << ch << "Right";
                 TreeRoot->rc = new HuffNode;
+                TreeRoot->rc->prev = new HuffNode;
                 TreeRoot->rc->prev = TreeRoot;
                 TreeRoot = TreeRoot->rc;
                 TreeRoot->contain = ch;
@@ -194,8 +204,6 @@ void Decoding::buildHuffTree(QFile *src, HuffNode *TreeRoot){
             }
 
         }
-
-        count++;
 
     }
 
@@ -225,6 +233,7 @@ void Decoding::writeDecodeFile(QFile *out, HuffNode *TreeRoot){
     curr = TreeRoot;
 
     for(int i=0; i<HuffCode.size(); i++){
+        //qDebug() << i;
         if(HuffCode[i]=='0'){
             curr = curr->lc;
         } else {
@@ -232,9 +241,9 @@ void Decoding::writeDecodeFile(QFile *out, HuffNode *TreeRoot){
         }
 
         if(curr->isLeaf==1){
-            char * ref;
-            ref = (char *)curr->contain;
-            out->write(ref);
+            //qDebug() << curr->contain;
+            char ch = curr->contain;
+            out->write(&ch);
             curr = TreeRoot;
         }
     }
@@ -270,5 +279,9 @@ void Decoding::decodeFile(QString inFileName, QString outPath)
     }
 
     writeDecodeFile(&out, HuffTree);
+    qDebug() << "Descompression finished.";
+
+    inFile.close();
+    out.close();
 
 }
