@@ -295,7 +295,7 @@ void Decoding::writeDecodeFile(QFile *out){
         }
 
         if(curr->isLeaf==1){
-            qDebug() << curr->contain;
+            //qDebug() << curr->contain;
             //char ch = curr->contain;
             //out->putChar((char)curr->contain);
             outCode += ((char )curr->contain);
@@ -311,18 +311,18 @@ void Decoding::decodeFile(QString inFileName, QString outPath)
     //Opening source file
     QFile inFile(inFileName);
     if(!inFile.open(QIODevice::ReadOnly)){
-        qDebug() << "failed.";
+        qDebug() << "Failed to try open file.";
     }
 
     calcSizeTree(&inFile);
 
-    qDebug() << "Tree Size: " <<TreeSize;
-    qDebug() << "Trash Size: " <<TrashSize;
+    //qDebug() << "Tree Size: " <<TreeSize;
+    //qDebug() << "Trash Size: " <<TrashSize;
 
     QString outFileName;
     outFileName = getFileName(&inFile);
 
-    qDebug() << outFileName;
+    //qDebug() << outFileName;
 
     buildHuffTree(&inFile);
 
@@ -330,7 +330,7 @@ void Decoding::decodeFile(QString inFileName, QString outPath)
 
     QFile out(outPath + outFileName);
     if(!out.open(QIODevice::WriteOnly)){
-        qDebug() << "File can not be descompressed. Try again";
+        qDebug() << "Failed to try descompress file. Try again";
     }    
 
     writeDecodeFile(&out);

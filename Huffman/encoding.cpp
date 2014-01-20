@@ -397,7 +397,7 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
     //Creating output file
     QFile out(outFileName);
     if(!out.open(QIODevice::WriteOnly)){
-        qDebug("failed");
+        qDebug("Failed to create file compressed.");
     }
 
     //Writing header of output file.
@@ -406,17 +406,17 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
     QByteArray bitSize;
     QByteArray byteSize;
 
-    qDebug() <<"Tree: " <<HuffTree.size();
+    //qDebug() <<"Tree: " <<HuffTree.size();
 
     bitSize += convertDecToBin(HuffTree.size());
 
-    qDebug() << bitSize;
+    //qDebug() << bitSize;
 
     while(bitSize.size()<13){
         bitSize.prepend('0');
     }
 
-    qDebug() <<"Trash: " <<tsize;
+    //qDebug() <<"Trash: " <<tsize;
 
     bitSize.prepend(convertDecToBin(tsize));
 
@@ -424,7 +424,7 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
         bitSize.prepend('0');
     }
 
-    qDebug() << "Bytes(2): " <<bitSize;
+    //qDebug() << "Bytes(2): " <<bitSize;
 
     byteSize = convertBinToDec(bitSize);
 
@@ -446,10 +446,10 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     out.write(HuffCode);
 
-    int outsize = HuffCode.size() + HuffTree.size() + inFile.fileName().size() + byteSize.size();
+    //int outsize = HuffCode.size() + HuffTree.size() + inFile.fileName().size() + byteSize.size();
 
-    qDebug() << "Tamanho do arquivo esperado:" << outsize;
-    qDebug() << "Tamanho real: " << out.size();
+    //qDebug() << "Tamanho do arquivo esperado:" << outsize;
+    //qDebug() << "Tamanho real: " << out.size();
 
     //Closing files.
     inFile.close();
