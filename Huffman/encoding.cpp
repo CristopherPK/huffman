@@ -107,12 +107,12 @@ void Encoding::buildHuffTree(HuffNode *NodeList[256]){
 
 void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
 
-    QString TreeCode;
-    QTextStream outdata(&TreeCode);
+    QByteArray TreeCode;
+//    QTextStream outdata(&TreeCode);
 
     //Bit Array for char huffman binary code
     int bits = 0;
-    QString code;
+    QByteArray code;
 
     HuffNode * curr = new HuffNode;
     HuffNode * aux = new HuffNode;
@@ -134,7 +134,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
                 //qDebug() << "(";
                 bits++;
                 code.append('0');
-                outdata << '(';
+                TreeCode.append('(');
                 aux = curr;                
                 curr = curr->lc;
                 curr->prev = aux;
@@ -152,7 +152,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
             } else {
 
                 //qDebug() << ")";
-                outdata << ')';
+                TreeCode.append(')');
                 curr = curr->prev;
                 if(curr->lc == NULL){
                     curr->rc = NULL;
@@ -177,7 +177,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
             //qDebug() << CodeList[(int) curr->contain]->code;
 
             if(curr->contain == '(' || curr->contain == ')' || curr->contain == '0'){
-                outdata << '0';
+                TreeCode.append('0');
             }
 
             //Removing the last bit
@@ -185,7 +185,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
             code.resize(bits);
 
             //Saving char at huffman tree
-            outdata << (char) curr->contain;
+            TreeCode.append((char) curr->contain);
             curr = curr->prev;
 
             //Unmounting huffman tree
@@ -203,7 +203,7 @@ void Encoding::writeHuffTree(HuffNode * TreeRoot,HuffNode *CodeList[256]){
 //    QTextStream outfile(out);
 //    outfile << TreeCode;
 
-    HuffTree = TreeCode.toLocal8Bit();
+    HuffTree = TreeCode;
 
 }
 

@@ -14,7 +14,7 @@ public:
     bool isLeaf;
     bool visited;
     unsigned char contain;
-    QString code;
+    QByteArray code;
     HuffNode *lc;
     HuffNode *rc;
     HuffNode *prev;

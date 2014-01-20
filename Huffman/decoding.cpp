@@ -148,13 +148,16 @@ void Decoding::buildHuffTree(QFile *src){
                     TreeRoot = TreeRoot->prev;
                 }
 
-            } else if(TreeRoot == NULL){
+            }
+
+            else if(TreeRoot == NULL){
                 TreeRoot = new HuffNode;
                 TreeRoot->isLeaf = 0;
                 TreeRoot->lc = TreeRoot->rc = 0;
                 TreeRoot->prev = new HuffNode;
                 TreeRoot->prev = TreeRoot;
             }
+
             else if(TreeRoot->lc==NULL){
                 //qDebug() << "Left";
                 TreeRoot->lc = new HuffNode;
@@ -163,7 +166,9 @@ void Decoding::buildHuffTree(QFile *src){
                 TreeRoot = TreeRoot->lc;
                 TreeRoot->lc = TreeRoot->rc = 0;
                 TreeRoot->isLeaf = 0;
-            } else if(TreeRoot->rc==NULL){
+            }
+
+            else if(TreeRoot->rc==NULL){
                 //qDebug() << "Right";
                 TreeRoot->rc = new HuffNode;
                 TreeRoot->rc->prev = new HuffNode;
@@ -231,7 +236,7 @@ void Decoding::buildHuffTree(QFile *src){
                 }
             }
 
-            if(TreeRoot->lc==NULL) {
+            else if(TreeRoot->lc==NULL) {
                 TreeRoot->lc = new HuffNode;
                 TreeRoot->lc->contain = ch;
                 //qDebug() << TreeRoot->lc->contain;
