@@ -336,7 +336,7 @@ void Decoding::decodeFile(QString inFileName, QString outPath)
     writeDecodeFile(&out);
     qDebug() << "Descompression finished.";
 
+    TreeRoot = NULL;
     inFile.close();
     out.close();
-
 }

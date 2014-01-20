@@ -29,8 +29,6 @@ public:
 
     void writeDecodeFile(QFile * out);
 
-    void freeHuffTree(HuffNode * TreeRoot);
-
     void decodeFile(QString inFileName, QString outPath);
 
 };

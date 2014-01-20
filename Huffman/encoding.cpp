@@ -363,27 +363,27 @@ void Encoding::encodeFile(QString inFileName, QString outFileName){
 
     //Calculating Frequency
     calcFreqChar(&inFile,freqList);
-    qDebug("Frequency ready.");
+    //qDebug("Frequency ready.");
     inFile.close();
 
     //Building List
     buildNodeList(NodeList, ListCopy,freqList);
-    qDebug("Node List ready.");
+    //qDebug("Node List ready.");
 
     //Sorting List
     sortNodeList(NodeList);
-    qDebug("Node List sorted ready.");
+    //qDebug("Node List sorted ready.");
 
     //Building Huffman Tree and chars binary code
     buildHuffTree(NodeList);
-    qDebug("Huffman Tree ready.");
+    //qDebug("Huffman Tree ready.");
 
     HuffNode * TreeRoot = new HuffNode;
     TreeRoot = NodeList[sizeList-1];
 
     //Building huffman binary code.
     writeHuffTree(TreeRoot, ListCopy);
-    qDebug("Huffman Tree write.");
+    //qDebug("Huffman Tree write.");
 
     if(!inFile.open(QIODevice::ReadOnly)){
         qDebug() << "failed.";
